@@ -53,4 +53,4 @@ It was also tricky to narrow it down to a single session because sources all var
 
 I used the **Helius Enhanced Transactions API** to fetch the connected wallet's Jupiter Swap transactions, and **Birdeye Historical Price API** to fetch the token historical prices at the timestamp of the given transaction.
 
-The app currently does not process all transactions (just the first 3 txs) for example purposes. Birdeye imposes a 1 request per second rate limit, so I capped the functionality just for this challenge.
+Birdeye imposes a 1 request per second rate limit and around 400 requests per month for the free plan, so I capped the functionality just for this challenge.
