@@ -1,53 +1,46 @@
 import { tryit } from "radash";
 import { getTokenPrice } from "@/app/_services/birdeye";
 import { getTransactions } from "@/app/_services/helius";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
+const WSOL_MINT = "So11111111111111111111111111111111111111112";
+
+type Asset = {
+  mint: string;
+  amount: number;
+  value: number;
+  price: number;
+};
+
+// TODO: add pagination for full transaction history fetch
 export const getPL = tryit(async (address: string) => {
-  // sampling 3 txs for now
-  const transactions = ((await getTransactions(address)) || []).slice(0, 3);
+  const transactions = await getTransactions(address);
+  if (!transactions) return { realized: 0, unrealized: 0 };
 
-  let totalPL = 0;
+  const txs = [...transactions].reverse().slice(0, 3);
+  const holdings = new Map<string, number>();
+  const costBasis = new Map<string, number>();
+  let realizedPL = 0;
 
-  for (const tx of transactions) {
+  // start from oldest tx
+  for (const tx of txs) {
     console.log("Parsing tx: ", tx.signature);
 
     const { events, timestamp } = tx;
     const { swap } = events;
-    const {
-      nativeInput,
-      nativeOutput,
-      tokenInputs,
-      tokenOutputs,
-      nativeFees,
-      tokenFees,
-    } = swap;
+    const { nativeInput, nativeOutput, tokenInputs, tokenOutputs } = swap;
+
     const tokenInput = tokenInputs[0];
     const tokenOutput = tokenOutputs[0];
 
-    const solPrice = await getTokenPrice(
-      "So11111111111111111111111111111111111111112",
-      timestamp
-    );
-    // quick & dirty throttle for rate limit
-    await new Promise((resolve) => setTimeout(resolve, 1001));
-
+    // fetch historical prices for all assets involved in the tx
+    const solPrice = await getTokenPrice(WSOL_MINT, timestamp);
     const inputTokenPrice = nativeInput
       ? solPrice
-      : await (async () => {
-          // quick & dirty throttle for rate limit
-          const price = await getTokenPrice(tokenInput.mint, timestamp);
-          await new Promise((resolve) => setTimeout(resolve, 1001));
-          return price;
-        })();
-
+      : await getTokenPrice(tokenInput.mint, timestamp);
     const outputTokenPrice = nativeOutput
       ? solPrice
-      : await (async () => {
-          // quick & dirty throttle for rate limit
-          const price = await getTokenPrice(tokenOutput.mint, timestamp);
-          await new Promise((resolve) => setTimeout(resolve, 1001));
-          return price;
-        })();
+      : await getTokenPrice(tokenOutput.mint, timestamp);
 
     if (
       solPrice === false ||
@@ -57,44 +50,90 @@ export const getPL = tryit(async (address: string) => {
       continue;
     }
 
-    // Calculate input value in USD
-    const inputValue = nativeInput
-      ? (Number(nativeInput.amount) / 1e9) * inputTokenPrice
-      : (Number(tokenInput.rawTokenAmount.tokenAmount) /
-          Math.pow(10, tokenInput.rawTokenAmount.decimals)) *
-        inputTokenPrice;
+    // identify the input asset
+    const input: Asset = nativeInput
+      ? {
+          mint: WSOL_MINT,
+          amount: Number(nativeInput.amount) / LAMPORTS_PER_SOL,
+          value: (Number(nativeInput.amount) / LAMPORTS_PER_SOL) * solPrice,
+          price: solPrice,
+        }
+      : {
+          mint: tokenInput.mint,
+          amount:
+            Number(tokenInput.rawTokenAmount.tokenAmount) /
+            Math.pow(10, tokenInput.rawTokenAmount.decimals),
+          value:
+            (Number(tokenInput.rawTokenAmount.tokenAmount) /
+              Math.pow(10, tokenInput.rawTokenAmount.decimals)) *
+            inputTokenPrice,
+          price: inputTokenPrice,
+        };
 
-    // Calculate output value in USD
-    const outputValue = nativeOutput
-      ? (Number(nativeOutput.amount) / 1e9) * outputTokenPrice
-      : (Number(tokenOutput.rawTokenAmount.tokenAmount) /
-          Math.pow(10, tokenOutput.rawTokenAmount.decimals)) *
-        outputTokenPrice;
+    // identify the output asset
+    const output: Asset = nativeOutput
+      ? {
+          mint: WSOL_MINT,
+          amount: Number(nativeOutput.amount) / LAMPORTS_PER_SOL,
+          value: (Number(nativeOutput.amount) / LAMPORTS_PER_SOL) * solPrice,
+          price: solPrice,
+        }
+      : {
+          mint: tokenOutput.mint,
+          amount:
+            Number(tokenOutput.rawTokenAmount.tokenAmount) /
+            Math.pow(10, tokenOutput.rawTokenAmount.decimals),
+          value:
+            (Number(tokenOutput.rawTokenAmount.tokenAmount) /
+              Math.pow(10, tokenOutput.rawTokenAmount.decimals)) *
+            outputTokenPrice,
+          price: outputTokenPrice,
+        };
 
-    // Calculate fees in USD
-    const nativeFeeValue = nativeFees.reduce((acc, fee) => {
-      return acc + (Number(fee.amount) / 1e9) * solPrice;
-    }, 0);
+    // if the input asset is already in the holdings, we need to calculate the sale
+    if (holdings.has(input.mint)) {
+      const currentHolding = holdings.get(input.mint) || 0;
+      const currentCostBasis = costBasis.get(input.mint) || 0;
+      const costPerUnit =
+        currentHolding > 0 ? currentCostBasis / currentHolding : 0;
 
-    const tokenFeeValue = tokenFees.reduce((acc, fee) => {
-      const feePrice =
-        fee.mint === "So11111111111111111111111111111111111111112"
-          ? solPrice
-          : outputTokenPrice;
-      return (
-        acc +
-        (Number(fee.rawTokenAmount.tokenAmount) /
-          Math.pow(10, fee.rawTokenAmount.decimals)) *
-          feePrice
-      );
-    }, 0);
+      const saleValue = input.amount * input.price;
+      const costOfSoldUnits = input.amount * costPerUnit;
+      realizedPL += saleValue - costOfSoldUnits;
 
-    // Calculate P&L for this transaction
-    const transactionPL =
-      outputValue - inputValue - nativeFeeValue - tokenFeeValue;
-    totalPL += transactionPL;
+      const newHolding = currentHolding - input.amount;
+      const newCostBasis = costPerUnit * newHolding;
+
+      holdings.set(input.mint, newHolding);
+      costBasis.set(input.mint, newCostBasis);
+    }
+
+    const currentOutputHolding = holdings.get(output.mint) || 0;
+    const currentOutputCostBasis = costBasis.get(output.mint) || 0;
+
+    const newOutputHolding = currentOutputHolding + output.amount;
+    const newOutputCostBasis =
+      currentOutputCostBasis + output.amount * output.price;
+
+    holdings.set(output.mint, newOutputHolding);
+    costBasis.set(output.mint, newOutputCostBasis);
   }
 
-  // basis points
-  return Math.round(totalPL * 100);
+  let unrealizedPL = 0;
+  for (const [mint, amount] of holdings.entries()) {
+    if (amount > 0) {
+      const price = await getTokenPrice(
+        mint,
+        Math.floor(Date.now().valueOf() / 1000)
+      );
+      const currentValue = amount * (price || 0);
+      const assetCostBasis = costBasis.get(mint) || 0;
+      unrealizedPL += currentValue - assetCostBasis;
+    }
+  }
+
+  return {
+    realized: Math.round(realizedPL * 100),
+    unrealized: Math.round(unrealizedPL * 100),
+  };
 });

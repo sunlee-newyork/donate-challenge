@@ -3,7 +3,10 @@ import { getPL } from "@/app/_utils/pl";
 
 type ResponseData = {
   message?: string;
-  pl?: number;
+  pl?: {
+    realized: number;
+    unrealized: number;
+  };
 };
 
 export async function GET(

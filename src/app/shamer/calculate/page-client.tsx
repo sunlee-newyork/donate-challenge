@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import cx from "classnames";
@@ -26,39 +26,41 @@ export default function CalculatePageClient() {
 
     const res = await fetch(`/api/pl?address=${publicKey?.toBase58()}`);
     const data = await res.json();
-    console.log("pl: ", data.pl);
-    setPl(Number((data.pl / 100).toFixed(2)));
-    setChemoRounds(Number((Math.abs(data.pl) / CHEMO_COST).toFixed(2)));
+
+    setPl(Number((data.pl.realized / 100).toFixed(2)));
+    setChemoRounds(Number((Math.abs(data.pl.realized) / CHEMO_COST).toFixed(2)));
     setLoading(false);
   }
 
+  const isPlSet = useMemo(() => typeof pl === "number", [pl]);
+
   const title = loading
     ? "Calculating your P&L..."
-    : !pl
+    : !isPlSet
       ? "Calculate your P&L"
-      : `Your total ${pl > 0 ? "profit" : "loss"} is`;
+      : `Your total realized ${pl! > 0 ? "profit" : "loss"} is`;
 
   const description = loading
     ? "We are calculating your P&L..."
-    : !pl
+    : !isPlSet
       ? "Click the button below to calculate your P&L"
       : null;
 
   return (
     <>
       <h1 className="text-3xl font-bold">{title}</h1>
-      {pl && (
+      {isPlSet && (
         <p
           className={cx(
             "text-6xl font-bold",
-            pl > 0 ? "text-green-500" : "text-red-500"
+            pl! > 0 ? "text-green-500" : "text-red-500"
           )}
         >
-          ${Math.abs(pl)}
+          ${Math.abs(pl!)}
         </p>
       )}
       <p className="py-6">{description}</p>
-      {!pl && (
+      {!isPlSet && (
         <button
           className="btn btn-primary"
           disabled={loading}
@@ -67,12 +69,12 @@ export default function CalculatePageClient() {
           Calculate Losses
         </button>
       )}
-      {pl && (
+      {isPlSet && (
         <div>
           <p>The average cost of chemotherapy is ${Number(CHEMO_COST / 100).toFixed(2)} USD.</p>
           <p>
             You could have paid for {chemoRounds} rounds of chemotherapy with
-            your {pl > 0 ? "profits" : "losses"}.
+            your {pl! > 0 ? "profits" : "losses"}.
           </p>
         </div>
       )}

@@ -12,6 +12,9 @@ export const getTokenPrice = async (
   address: string,
   timestamp: number
 ): Promise<number | false> => {
+  // quick & dirty throttle for rate limit
+  await new Promise((resolve) => setTimeout(resolve, 1001));
+
   const timeFrom = timestamp - 1000 * 60;
   const timeTo = timestamp + 1000 * 60;
 
