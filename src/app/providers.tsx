@@ -27,30 +27,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
       onError={ handleWalletError }
       autoConnect
     >
-      <WalletDialogProvider sx={{
-        '.MuiDialogTitle-root': {
-          p: '1rem 1.5rem',
-          color: ({ palette }) => palette.mode === 'light'
-            ? palette.getContrastText( palette.secondary.main )
-            : palette.text.secondary,
-          bgcolor: ({ palette }) => palette.mode === 'light'
-            ? palette.secondary.main
-            : palette.secondary.main,
-          '.MuiIconButton-root': {
-            color: ({ palette }) => palette.mode === 'light'
-              ? palette.getContrastText( palette.secondary.main )
-              : palette.text.secondary,
-          }
-        },
-        '.MuiList-root': {
-          bgcolor: ({ palette }) => palette.background.paper + '!important',
-          '.MuiListItem-root': {
-            boxShadow: ({ palette }) => palette.mode === 'light'
-              ? 'inset 0 1px 0 0 rgb(100,100,100,.1)'
-              : 'inset 0 1px 0 0 rgb(255,255,255,.05)',
-          }
-        }
-      }}>
+      <WalletDialogProvider>
         {children}
       </WalletDialogProvider>
     </WalletProvider>
