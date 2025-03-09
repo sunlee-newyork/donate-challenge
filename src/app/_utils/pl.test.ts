@@ -1,9 +1,6 @@
 import { getPL } from "./pl";
-import * as helius from "../_services/helius";
-import * as birdeye from "../_services/birdeye";
-
-jest.mock("../_services/helius");
-jest.mock("../_services/birdeye");
+import * as helius from "@/app/_services/helius";
+import * as birdeye from "@/app/_services/birdeye";
 
 describe("pl.ts", () => {
   it("should calculate the pl", async () => {

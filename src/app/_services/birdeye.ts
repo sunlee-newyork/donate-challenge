@@ -29,7 +29,6 @@ export const getTokenPrice = async (
   });
 
   if (response.status !== 200) {
-    console.log(response);
     console.error(
       `Response status ${response.status} for ${address} at ${timestamp}`
     );
@@ -47,8 +46,6 @@ export const getTokenPrice = async (
     console.error(`No data found for ${address} at ${timestamp}`);
     return false;
   }
-
-  console.log(data.data.items[0]);
 
   const price = data.data.items[0].value;
 

@@ -71,10 +71,6 @@ export const getPL = tryit(async (address: string): Promise<number> => {
           price: inputTokenPrice,
         };
 
-    console.log(
-      `Input: ${input.mint} amount: ${input.amount} value: ${input.value} price: ${input.price}`
-    );
-
     // identify the output asset
     const output: Asset = nativeOutput
       ? {
@@ -95,66 +91,35 @@ export const getPL = tryit(async (address: string): Promise<number> => {
           price: outputTokenPrice,
         };
 
-    console.log(
-      `Output: ${output.mint} amount: ${output.amount} value: ${output.value} price: ${output.price}`
-    );
-
     // if the input asset is already in the holdings, we need to process the sale
-    console.log(`Processing input token ${input.mint}...`);
     if (holdings.has(input.mint)) {
       const currentHolding = holdings.get(input.mint) || 0;
       const currentCostBasis = costBasis.get(input.mint) || 0;
       const costPerUnit =
         currentHolding > 0 ? currentCostBasis / currentHolding : 0;
 
-      console.log(`Current holding: ${currentHolding}`);
-      console.log(`Current cost basis: ${currentCostBasis}`);
-      console.log(`Cost per unit: ${costPerUnit}`);
-
       const saleValue = input.amount * input.price;
       const costValue = input.amount * costPerUnit;
       realizedPL += saleValue - costValue;
 
-      console.log(`Sale value: ${saleValue}`);
-      console.log(`Cost value: ${costValue}`);
-      console.log(`Realized PL: ${realizedPL}`);
-
       const newHolding = currentHolding - input.amount;
       const newCostBasis = costPerUnit * newHolding;
 
-      console.log(`New holding: ${newHolding}`);
-      console.log(`New cost basis: ${newCostBasis}`);
-
       holdings.set(input.mint, newHolding);
       costBasis.set(input.mint, newCostBasis);
-
-      console.log(`Updated holdings: ${holdings.get(input.mint)}`);
-      console.log(`Updated cost basis: ${costBasis.get(input.mint)}`);
     }
 
     // process the output asset
-    console.log(`Processing output token ${output.mint}...`);
     const currentOutputHolding = holdings.get(output.mint) || 0;
     const currentOutputCostBasis = costBasis.get(output.mint) || 0;
-
-    console.log(`Current output holding: ${currentOutputHolding}`);
-    console.log(`Current output cost basis: ${currentOutputCostBasis}`);
 
     const newOutputHolding = currentOutputHolding + output.amount;
     const newOutputCostBasis =
       currentOutputCostBasis + output.amount * output.price;
 
-    console.log(`New output holding: ${newOutputHolding}`);
-    console.log(`New output cost basis: ${newOutputCostBasis}`);
-
     holdings.set(output.mint, newOutputHolding);
     costBasis.set(output.mint, newOutputCostBasis);
-
-    console.log(`Updated holdings: ${holdings.get(output.mint)}`);
-    console.log(`Updated cost basis: ${costBasis.get(output.mint)}`);
   }
-
-  console.log(`Realized PL: ${realizedPL}`);
 
   return Math.round(realizedPL * 100);
 });
