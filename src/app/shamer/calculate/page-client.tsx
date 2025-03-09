@@ -66,7 +66,7 @@ export default function CalculatePageClient() {
           disabled={loading}
           onClick={fetchPl}
         >
-          Calculate Losses
+          Calculate P&L
         </button>
       )}
       {isPlSet && (
