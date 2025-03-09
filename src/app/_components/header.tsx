@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Wallet } from "@/app/_components/wallet";
 import Image from "next/image";
@@ -15,6 +15,8 @@ export const Header = () => {
               alt=""
               src="/donate-logo.svg"
               className="h-8 w-auto"
+              width={100}
+              height={50}
             />
           </Link>
           <Wallet />
