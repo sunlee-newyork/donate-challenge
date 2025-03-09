@@ -105,8 +105,19 @@ export type HeliusSwapTransaction = {
           mint: string;
           tokenStandard: string;
         }[];
-        tokenFees: any[];
-        nativeFees: any[];
+        tokenFees: {
+          userAccount: string;
+          tokenAccount: string;
+          rawTokenAmount: {
+            tokenAmount: string;
+            decimals: number;
+          };
+          mint: string;
+        }[];
+        nativeFees: {
+          account: string;
+          amount: string;
+        }[];
         programInfo: {
           source: string;
           account: string;

@@ -1,6 +1,7 @@
 'use client';
 
 import { Wallet } from "@/app/_components/wallet";
+import Image from "next/image";
 import Link from "next/link";
 
 export const Header = () => {
@@ -10,7 +11,7 @@ export const Header = () => {
         <div className="flex flex-1 justify-between">
           <Link href="/" className="-m-1.5 p-1.5">
             <span className="sr-only">Solana Donation Shamer</span>
-            <img
+            <Image
               alt=""
               src="/donate-logo.svg"
               className="h-8 w-auto"
