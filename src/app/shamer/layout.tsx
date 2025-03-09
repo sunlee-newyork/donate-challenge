@@ -1,10 +1,8 @@
 export default async function ShamerLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="hero bg-base-200 min-h-screen">
-      <div className="hero-content text-center">
-        <div className="max-w-md">
-          {children}
-        </div>
+    <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+      <div className="text-center">
+        {children}
       </div>
     </div>
   );

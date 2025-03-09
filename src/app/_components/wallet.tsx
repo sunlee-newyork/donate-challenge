@@ -1,6 +1,6 @@
-import { FC } from 'react';
+import { FC } from "react";
 
-import { WalletMultiButton } from '@solana/wallet-adapter-material-ui';
+import { WalletMultiButton } from "@solana/wallet-adapter-material-ui";
 
 export const Wallet: FC = () => {
   return (
