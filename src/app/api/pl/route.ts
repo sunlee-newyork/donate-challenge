@@ -3,9 +3,7 @@ import { getPL } from "@/app/_utils/pl";
 
 type ResponseData = {
   message?: string;
-  data?: {
-    pl: number;
-  };
+  pl?: number;
 };
 
 export async function GET(
@@ -18,7 +16,7 @@ export async function GET(
     if (plError) {
       return NextResponse.json({ message: plError.message }, { status: 500 });
     } else {
-      return NextResponse.json({ data: { pl } }, { status: 200 });
+      return NextResponse.json({ pl }, { status: 200 });
     }
   } catch (error) {
     const errorMessage = `Failed to process p&l: ${

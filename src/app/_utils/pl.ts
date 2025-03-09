@@ -3,8 +3,8 @@ import { getTokenPrice } from "@/app/_services/birdeye";
 import { getTransactions } from "@/app/_services/helius";
 
 export const getPL = tryit(async (address: string) => {
-  // sampling 10 txs for now
-  const transactions = ((await getTransactions(address)) || []).slice(0, 10);
+  // sampling 3 txs for now
+  const transactions = ((await getTransactions(address)) || []).slice(0, 3);
 
   let totalPL = 0;
 
@@ -95,5 +95,6 @@ export const getPL = tryit(async (address: string) => {
     totalPL += transactionPL;
   }
 
-  return totalPL;
+  // basis points
+  return Math.round(totalPL * 100);
 });

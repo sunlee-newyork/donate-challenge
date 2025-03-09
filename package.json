@@ -19,6 +19,7 @@
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.98.0",
     "@wallet-standard/features": "^1.1.0",
+    "classnames": "^2.5.1",
     "next": "15.2.1",
     "radash": "^12.1.0",
     "react": "^19.0.0",
