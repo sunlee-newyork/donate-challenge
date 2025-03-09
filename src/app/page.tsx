@@ -1,4 +1,4 @@
-import HomeClient from "./page-client";
+import HomeClient from "@/app/page-client";
 
 export default function Home() {
   return (

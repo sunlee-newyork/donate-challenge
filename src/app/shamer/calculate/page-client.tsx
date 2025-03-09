@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import cx from "classnames";
 
-const CHEMO_COST = 600000;
+const CHEMO_COST = 1500000;
 
 export default function CalculatePageClient() {
   const router = useRouter();
@@ -72,7 +72,7 @@ export default function CalculatePageClient() {
       {isPlSet && (
         <div>
           <p>
-            The average cost of chemotherapy for 1 month is $
+            The average cost of a single session of chemotherapy for breast cancer is $
             {Number(CHEMO_COST / 100).toFixed(2)} USD.
           </p>
           <p>

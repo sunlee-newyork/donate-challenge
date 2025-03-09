@@ -24,7 +24,7 @@ export const getPL = tryit(async (address: string): Promise<number> => {
 
   // start from oldest tx
   for (const tx of txs) {
-    console.log("Parsing tx: ", tx.signature);
+    console.log("Processing tx: ", tx.signature);
 
     const { events, timestamp } = tx;
     const { swap } = events;
