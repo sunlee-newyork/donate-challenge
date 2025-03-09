@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/app/providers";
 import { Header } from "@/app/_components/header";
+import { Analytics } from "@vercel/analytics/react"
 
 import "./globals.css";
 
@@ -31,6 +32,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          <Analytics />
           <Header />
           <main className="bg-white">
             <div className="relative isolate px-6 pt-14 lg:px-8">
