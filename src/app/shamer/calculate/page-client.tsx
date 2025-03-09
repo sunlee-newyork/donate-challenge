@@ -70,13 +70,13 @@ export default function CalculatePageClient() {
         </button>
       )}
       {isPlSet && (
-        <div>
-          <p>
+        <div className="flex flex-col gap-4">
+          <p className="text-lg text-gray-500">
             The average cost of a single session of chemotherapy for breast cancer in the US is{" "}
-            <span className="font-bold text-lg">${Number(CHEMO_COST / 100)} USD</span>.
+            <span className="font-bold text-xl">${Number(CHEMO_COST / 100)} USD</span>.
           </p>
-          <p>
-            You could have paid for <span className="font-bold text-lg">{chemoRounds} sessions</span> of chemotherapy with
+          <p className="text-lg">
+            You could have paid for <span className="font-bold text-xl">{chemoRounds} sessions</span> of chemotherapy with
             your {pl! > 0 ? "profits" : "losses"}.
           </p>
         </div>
