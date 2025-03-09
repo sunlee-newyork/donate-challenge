@@ -72,7 +72,7 @@ export default function CalculatePageClient() {
       {isPlSet && (
         <div>
           <p>
-            The average cost of a single session of chemotherapy for breast cancer is{" "}
+            The average cost of a single session of chemotherapy for breast cancer in the US is{" "}
             <span className="font-bold text-lg">${Number(CHEMO_COST / 100)} USD</span>.
           </p>
           <p>
