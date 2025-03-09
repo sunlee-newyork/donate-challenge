@@ -12,8 +12,6 @@ export async function GET(
   req: NextRequest
 ): Promise<NextResponse<ResponseData>> {
   try {
-    setTimeout(() => {}, 1000);
-
     const address = req.nextUrl.searchParams.get("address");
     const [plError, pl] = await getPL(address as string);
 

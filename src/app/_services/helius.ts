@@ -116,4 +116,19 @@ export type HeliusSwapTransaction = {
       }[];
     };
   };
-}
+};
+
+export const getTransactions = async (address: string) => {
+  const response = await fetch(
+    `${process.env.HELIUS_API_HOST}v0/addresses/${address}/transactions?api-key=${process.env.HELIUS_API_KEY}&source=JUPITER&type=SWAP`
+  );
+
+  if (response.status !== 200) {
+    console.error(`Response status ${response.status} for ${address}`);
+    return [];
+  }
+
+  const transactions = (await response.json()) as HeliusSwapTransaction[];
+
+  return transactions;
+};
