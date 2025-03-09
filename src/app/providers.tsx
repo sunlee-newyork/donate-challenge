@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import dynamic from 'next/dynamic';
 
 // Create a placeholder for the children
