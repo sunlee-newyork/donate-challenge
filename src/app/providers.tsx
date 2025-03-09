@@ -1,55 +1,24 @@
 "use client";
 
 import { useMemo } from "react";
-import { WalletProvider } from "@solana/wallet-adapter-react";
-import { WalletDialogProvider } from "@solana/wallet-adapter-material-ui";
-import { WalletError } from "@solana/wallet-adapter-base";
-import {
-  LedgerWalletAdapter,
-  PhantomWalletAdapter,
-  SolflareWalletAdapter,
-} from '@solana/wallet-adapter-wallets';
+import dynamic from 'next/dynamic';
 
+// Create a placeholder for the children
+const ClientOnly = ({ children }: { children: React.ReactNode }) => {
+  return <>{children}</>;
+};
+
+// Dynamically import the wallet components with SSR disabled
+const WalletProviders = dynamic(
+  () => import('./wallet-providers').then(mod => mod.default),
+  { ssr: false }
+);
+
+// Export the main provider component
 export const Providers = ({ children }: { children: React.ReactNode }) => {
-  const wallets = useMemo( () => [
-    new PhantomWalletAdapter(),
-    new SolflareWalletAdapter(),
-    new LedgerWalletAdapter(),
-  ], [] );
-
-  const handleWalletError = ( e: WalletError ) => {
-    console.error( 'Solana wallet error: ', e );
-  }
-
   return (
-    <WalletProvider
-      wallets={ wallets }
-      onError={ handleWalletError }
-      autoConnect
-    >
-      <WalletDialogProvider sx={{
-        '.MuiDialogTitle-root': {
-          p: '1rem 1.5rem',
-          color: ({ palette }) => palette.mode === 'light'
-            ? palette.getContrastText( palette.secondary.main )
-            : palette.text.secondary,
-          '.MuiIconButton-root': {
-            color: ({ palette }) => palette.mode === 'light'
-              ? palette.getContrastText( palette.secondary.main )
-              : palette.text.secondary,
-          }
-        },
-        '.MuiList-root': {
-          bgcolor: ({ palette }) => palette.background.paper + '!important',
-          '.MuiListItem-root': {
-            boxShadow: ({ palette }) => palette.mode === 'light'
-              ? 'inset 0 1px 0 0 rgb(100,100,100,.1)'
-              : 'inset 0 1px 0 0 rgb(255,255,255,.05)',
-          }
-        }
-      }}>
-        {children}
-      </WalletDialogProvider>
-    </WalletProvider>
+    <ClientOnly>
+      <WalletProviders>{children}</WalletProviders>
+    </ClientOnly>
   );
-}
+};
