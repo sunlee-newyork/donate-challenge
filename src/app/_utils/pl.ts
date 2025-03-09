@@ -13,9 +13,9 @@ type Asset = {
 };
 
 // TODO: add pagination for full transaction history fetch
-export const getPL = tryit(async (address: string) => {
+export const getPL = tryit(async (address: string): Promise<number> => {
   const transactions = await getTransactions(address);
-  if (!transactions) return { realized: 0, unrealized: 0 };
+  if (!transactions) return 0;
 
   const txs = [...transactions].reverse().slice(0, 3);
   const holdings = new Map<string, number>();
@@ -47,6 +47,7 @@ export const getPL = tryit(async (address: string) => {
       inputTokenPrice === false ||
       outputTokenPrice === false
     ) {
+      console.error(`Failed to fetch prices for tx: ${tx.signature}`);
       continue;
     }
 
@@ -70,6 +71,10 @@ export const getPL = tryit(async (address: string) => {
           price: inputTokenPrice,
         };
 
+    console.log(
+      `Input: ${input.mint} amount: ${input.amount} value: ${input.value} price: ${input.price}`
+    );
+
     // identify the output asset
     const output: Asset = nativeOutput
       ? {
@@ -90,50 +95,66 @@ export const getPL = tryit(async (address: string) => {
           price: outputTokenPrice,
         };
 
-    // if the input asset is already in the holdings, we need to calculate the sale
+    console.log(
+      `Output: ${output.mint} amount: ${output.amount} value: ${output.value} price: ${output.price}`
+    );
+
+    // if the input asset is already in the holdings, we need to process the sale
+    console.log(`Processing input token ${input.mint}...`);
     if (holdings.has(input.mint)) {
       const currentHolding = holdings.get(input.mint) || 0;
       const currentCostBasis = costBasis.get(input.mint) || 0;
       const costPerUnit =
         currentHolding > 0 ? currentCostBasis / currentHolding : 0;
 
+      console.log(`Current holding: ${currentHolding}`);
+      console.log(`Current cost basis: ${currentCostBasis}`);
+      console.log(`Cost per unit: ${costPerUnit}`);
+
       const saleValue = input.amount * input.price;
-      const costOfSoldUnits = input.amount * costPerUnit;
-      realizedPL += saleValue - costOfSoldUnits;
+      const costValue = input.amount * costPerUnit;
+      realizedPL += saleValue - costValue;
+
+      console.log(`Sale value: ${saleValue}`);
+      console.log(`Cost value: ${costValue}`);
+      console.log(`Realized PL: ${realizedPL}`);
 
       const newHolding = currentHolding - input.amount;
       const newCostBasis = costPerUnit * newHolding;
 
+      console.log(`New holding: ${newHolding}`);
+      console.log(`New cost basis: ${newCostBasis}`);
+
       holdings.set(input.mint, newHolding);
       costBasis.set(input.mint, newCostBasis);
+
+      console.log(`Updated holdings: ${holdings.get(input.mint)}`);
+      console.log(`Updated cost basis: ${costBasis.get(input.mint)}`);
     }
 
+    // process the output asset
+    console.log(`Processing output token ${output.mint}...`);
     const currentOutputHolding = holdings.get(output.mint) || 0;
     const currentOutputCostBasis = costBasis.get(output.mint) || 0;
+
+    console.log(`Current output holding: ${currentOutputHolding}`);
+    console.log(`Current output cost basis: ${currentOutputCostBasis}`);
 
     const newOutputHolding = currentOutputHolding + output.amount;
     const newOutputCostBasis =
       currentOutputCostBasis + output.amount * output.price;
 
+    console.log(`New output holding: ${newOutputHolding}`);
+    console.log(`New output cost basis: ${newOutputCostBasis}`);
+
     holdings.set(output.mint, newOutputHolding);
     costBasis.set(output.mint, newOutputCostBasis);
+
+    console.log(`Updated holdings: ${holdings.get(output.mint)}`);
+    console.log(`Updated cost basis: ${costBasis.get(output.mint)}`);
   }
 
-  let unrealizedPL = 0;
-  for (const [mint, amount] of holdings.entries()) {
-    if (amount > 0) {
-      const price = await getTokenPrice(
-        mint,
-        Math.floor(Date.now().valueOf() / 1000)
-      );
-      const currentValue = amount * (price || 0);
-      const assetCostBasis = costBasis.get(mint) || 0;
-      unrealizedPL += currentValue - assetCostBasis;
-    }
-  }
+  console.log(`Realized PL: ${realizedPL}`);
 
-  return {
-    realized: Math.round(realizedPL * 100),
-    unrealized: Math.round(unrealizedPL * 100),
-  };
+  return Math.round(realizedPL * 100);
 });

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import cx from "classnames";
 
-const CHEMO_COST = 2000000;
+const CHEMO_COST = 600000;
 
 export default function CalculatePageClient() {
   const router = useRouter();
@@ -27,8 +27,8 @@ export default function CalculatePageClient() {
     const res = await fetch(`/api/pl?address=${publicKey?.toBase58()}`);
     const data = await res.json();
 
-    setPl(Number((data.pl.realized / 100).toFixed(2)));
-    setChemoRounds(Number((Math.abs(data.pl.realized) / CHEMO_COST).toFixed(2)));
+    setPl(Number((data.pl / 100).toFixed(2)));
+    setChemoRounds(Number((Math.abs(data.pl) / CHEMO_COST).toFixed(2)));
     setLoading(false);
   }
 
@@ -71,9 +71,12 @@ export default function CalculatePageClient() {
       )}
       {isPlSet && (
         <div>
-          <p>The average cost of chemotherapy is ${Number(CHEMO_COST / 100).toFixed(2)} USD.</p>
           <p>
-            You could have paid for {chemoRounds} rounds of chemotherapy with
+            The average cost of chemotherapy for 1 month is $
+            {Number(CHEMO_COST / 100).toFixed(2)} USD.
+          </p>
+          <p>
+            You could have paid for {chemoRounds} months of chemotherapy with
             your {pl! > 0 ? "profits" : "losses"}.
           </p>
         </div>

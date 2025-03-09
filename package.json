@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest --config ./jest.config.json --coverage"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -28,13 +29,16 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "daisyui": "^5.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.2.1",
+    "jest": "^29.7.0",
     "tailwindcss": "^4",
+    "ts-jest": "^29.2.6",
     "typescript": "^5"
   },
   "packageManager": "pnpm@8.7.1+sha512.41bb77121614697152da4e052d003baf6fde633fc9a03786ebcd3fdd45c6d066b4dcb3ee6381a076f08b7beccedcced99d61b8548e1b03093b4292727ebe5ea8"
